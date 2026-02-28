@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
@@ -35,8 +35,9 @@ import { CuentasService } from '../services/cuentas.service';
 
       <cdk-virtual-scroll-viewport
         #viewport
-        itemSize="90"
-        class="cuenta-list">
+        [itemSize]="itemHeight"
+        class="cuenta-list"
+        (scrolledIndexChange)="onScrolledIndexChange($event)">
         <div
           *cdkVirtualFor="let cuenta of paginatedCuentas"
           class="cuenta-item"
@@ -90,34 +91,42 @@ import { CuentasService } from '../services/cuentas.service';
     .side-sheet {
       position: fixed;
       top: 0;
-      right: -500px;
-      width: 500px;
+      right: 0;
+      width: min(100%, 500px);
       height: 100vh;
       background: white;
       box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-      transition: right 0.3s ease;
+      transition: transform 0.3s ease;
       z-index: 1001;
       display: flex;
       flex-direction: column;
+      transform: translateX(100%);
     }
 
     .side-sheet.open {
-      right: 0;
+      transform: translateX(0);
+    }
+
+    @media (max-width: 1024px) {
+      .side-sheet {
+        width: 100%;
+      }
     }
 
     .side-sheet-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px;
+      padding: clamp(12px, 4vw, 20px);
       border-bottom: 1px solid #e0e0e0;
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: white;
+      flex-shrink: 0;
     }
 
     .side-sheet-header h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: clamp(18px, 5vw, 24px);
       font-weight: 600;
     }
 
@@ -143,16 +152,17 @@ import { CuentasService } from '../services/cuentas.service';
 
     .search-container {
       position: relative;
-      padding: 20px;
+      padding: clamp(12px, 3vw, 20px);
       border-bottom: 1px solid #e0e0e0;
+      flex-shrink: 0;
     }
 
     .search-input {
       width: 100%;
-      padding: 12px 40px 12px 12px;
+      padding: clamp(8px, 2vw, 12px) clamp(32px, 5vw, 40px) clamp(8px, 2vw, 12px) clamp(8px, 2vw, 12px);
       border: 2px solid #e0e0e0;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: clamp(14px, 3vw, 16px);
       transition: border-color 0.2s;
       box-sizing: border-box;
     }
@@ -172,14 +182,15 @@ import { CuentasService } from '../services/cuentas.service';
     }
 
     .results-info {
-      padding: 12px 20px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
       background: #f8fafc;
       border-bottom: 1px solid #e0e0e0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: clamp(12px, 2.5vw, 14px);
       color: #64748b;
+      flex-shrink: 0;
     }
 
     .loading {
@@ -193,12 +204,12 @@ import { CuentasService } from '../services/cuentas.service';
     }
 
     .cuenta-item {
-      padding: 12px 16px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 2vw, 16px);
       border-bottom: 1px solid #f1f5f9;
       transition: background 0.2s;
       display: flex;
       align-items: flex-start;
-      gap: 12px;
+      gap: clamp(8px, 2vw, 12px);
     }
 
     .cuenta-item:hover {
@@ -212,12 +223,13 @@ import { CuentasService } from '../services/cuentas.service';
     .checkbox-container {
       display: flex;
       align-items: center;
-      padding-top: 6px;
+      padding-top: clamp(4px, 1vw, 6px);
+      flex-shrink: 0;
     }
 
     .checkbox {
-      width: 20px;
-      height: 20px;
+      width: clamp(16px, 3vw, 20px);
+      height: clamp(16px, 3vw, 20px);
       cursor: pointer;
       accent-color: #2563eb;
     }
@@ -225,63 +237,75 @@ import { CuentasService } from '../services/cuentas.service';
     .cuenta-content {
       flex: 1;
       cursor: pointer;
+      min-width: 0;
     }
 
     .cuenta-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: clamp(3px, 1vw, 6px);
+      gap: clamp(6px, 1vw, 8px);
     }
 
     .cuenta-id {
-      font-size: 12px;
+      font-size: clamp(10px, 2vw, 12px);
       font-weight: 600;
       color: #2563eb;
+      flex-shrink: 0;
     }
 
     .cuenta-oficina {
-      font-size: 12px;
+      font-size: clamp(10px, 2vw, 12px);
       background: #dbeafe;
       color: #1e40af;
-      padding: 4px 8px;
+      padding: clamp(2px, 1vw, 4px) clamp(4px, 1vw, 8px);
       border-radius: 4px;
       font-weight: 500;
+      flex-shrink: 0;
     }
 
     .cuenta-nombre {
-      font-size: 15px;
+      font-size: clamp(13px, 3vw, 15px);
       font-weight: 600;
       color: #1e293b;
-      margin-bottom: 4px;
+      margin-bottom: clamp(2px, 1vw, 4px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .cuenta-codigo {
-      font-size: 13px;
+      font-size: clamp(11px, 2.5vw, 13px);
       color: #64748b;
       font-family: 'Courier New', monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .pagination-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 20px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
       border-top: 1px solid #e0e0e0;
       border-bottom: 1px solid #e0e0e0;
       background: #f8fafc;
-      gap: 8px;
+      gap: clamp(6px, 1vw, 8px);
+      flex-shrink: 0;
     }
 
     .pagination-btn {
-      padding: 8px 12px;
+      padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
       border: 1px solid #e0e0e0;
       background: white;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: clamp(12px, 2vw, 14px);
       color: #64748b;
       transition: all 0.2s;
+      white-space: nowrap;
     }
 
     .pagination-btn:hover:not(:disabled) {
@@ -295,25 +319,26 @@ import { CuentasService } from '../services/cuentas.service';
     }
 
     .page-info {
-      font-size: 13px;
+      font-size: clamp(11px, 2vw, 13px);
       color: #64748b;
       font-weight: 500;
     }
 
     .side-sheet-footer {
       display: flex;
-      gap: 12px;
-      padding: 16px 20px;
+      gap: clamp(8px, 2vw, 12px);
+      padding: clamp(10px, 3vw, 16px) clamp(12px, 3vw, 20px);
       border-top: 1px solid #e0e0e0;
+      flex-shrink: 0;
     }
 
     .btn-cancel {
       flex: 1;
-      padding: 12px 16px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 2vw, 16px);
       background: white;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: clamp(13px, 2.5vw, 16px);
       font-weight: 600;
       color: #64748b;
       cursor: pointer;
@@ -327,11 +352,11 @@ import { CuentasService } from '../services/cuentas.service';
 
     .btn-select {
       flex: 1;
-      padding: 12px 16px;
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 2vw, 16px);
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: clamp(13px, 2.5vw, 16px);
       font-weight: 600;
       color: white;
       cursor: pointer;
@@ -376,9 +401,11 @@ export class SideSheetComponent implements OnInit, OnDestroy {
 
   itemsPerPage = 10;
   currentPage = 1;
+  itemHeight = 72;
 
   private searchSubject = new Subject<string>();
   private worker?: Worker;
+  private resizeObserver?: ResizeObserver;
 
   constructor(private cuentasService: CuentasService) {}
 
@@ -386,7 +413,7 @@ export class SideSheetComponent implements OnInit, OnDestroy {
     this.allCuentas = this.cuentasService.getCuentas();
     this.filteredCuentas = this.allCuentas;
     this.totalCuentas = this.allCuentas.length;
-    this.updatePagination();
+    this.calculateDynamicItems();
 
     if (typeof Worker !== 'undefined') {
       this.worker = new Worker(new URL('../workers/filter.worker', import.meta.url), { type: 'module' });
@@ -410,6 +437,8 @@ export class SideSheetComponent implements OnInit, OnDestroy {
       .subscribe(term => {
         this.filterCuentas(term);
       });
+
+    this.setupResizeObserver();
   }
 
   ngOnDestroy(): void {
@@ -417,6 +446,16 @@ export class SideSheetComponent implements OnInit, OnDestroy {
       this.worker.terminate();
     }
     this.searchSubject.complete();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.isOpen) {
+      this.calculateDynamicItems();
+    }
   }
 
   get totalPages(): number {
@@ -429,6 +468,9 @@ export class SideSheetComponent implements OnInit, OnDestroy {
 
   open(): void {
     this.isOpen = true;
+    setTimeout(() => {
+      this.calculateDynamicItems();
+    }, 100);
   }
 
   close(): void {
@@ -480,6 +522,39 @@ export class SideSheetComponent implements OnInit, OnDestroy {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.paginatedCuentas = this.filteredCuentas.slice(startIndex, endIndex);
+  }
+
+  private calculateDynamicItems(): void {
+    const sideSheet = document.querySelector('.side-sheet') as HTMLElement;
+    if (!sideSheet) return;
+
+    const headerHeight = 60;
+    const searchHeight = 60;
+    const resultsHeight = 40;
+    const paginationHeight = 46;
+    const footerHeight = 52;
+
+    const availableHeight = window.innerHeight - (headerHeight + searchHeight + resultsHeight + paginationHeight + footerHeight);
+    const calculatedItemHeight = Math.max(60, Math.min(80, Math.floor(availableHeight / 8)));
+    this.itemHeight = calculatedItemHeight;
+    this.itemsPerPage = Math.max(5, Math.floor(availableHeight / calculatedItemHeight));
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  private setupResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const sideSheet = document.querySelector('.side-sheet');
+    if (sideSheet) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.calculateDynamicItems();
+      });
+      this.resizeObserver.observe(sideSheet);
+    }
+  }
+
+  onScrolledIndexChange(index: number): void {
   }
 
   private filterCuentas(term: string): void {
